@@ -19,4 +19,18 @@ async function getTargetCustomers(days, minAmount) {
   }
 }
 
-module.exports = { getTargetCustomers };
+function generateSMSContent(template, customer) {
+    return template.replace('{name}', customer.name)
+                   .replace('{amount}', customer.total_amount);
+  }
+  
+  async function sendMarketingSMS(customers, template) {
+    for (const customer of customers) {
+      const message = generateSMSContent(template, customer);
+      // 這裡模擬發送簡訊的過程
+      console.log(`發送簡訊給 ${customer.name}: ${message}`);
+      // 實際應用中,這裡應該調用簡訊服務的API
+    }
+  }
+
+module.exports = { getTargetCustomers, sendMarketingSMS };
