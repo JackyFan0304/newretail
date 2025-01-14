@@ -1,0 +1,37 @@
+# 依賴包
+node_modules/
+
+# 日誌檔案
+logs
+*.log
+npm-debug.log*
+
+# 運行時數據
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# 目錄
+dist/
+build/
+
+# 密鑰文件
+.env
+
+# 系統文件
+.DS_Store
+Thumbs.db
+
+# IDE 和編輯器文件
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 測試覆蓋率報告
+coverage/
+
+# 臨時文件
+tmp/
+temp/
