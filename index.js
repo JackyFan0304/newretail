@@ -1,4 +1,4 @@
-const { getTargetCustomers, sendMarketingSMS } = require('./customerSegmentation');
+const { getTargetCustomers, sendMarketingSMS } = require('./customerService');
 
 async function runMarketingCampaign() {
   try {
