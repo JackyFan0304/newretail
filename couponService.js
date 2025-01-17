@@ -12,24 +12,27 @@ async function claimCoupon(userId, couponId) {
   const lockKey = `coupon_lock:${couponId}`;
   const quantityKey = `coupon_quantity:${couponId}`;
   const lockTimeout = 30000; // 鎖超時時間：30 秒
+  const lockValue = `${userId}:${Date.now()}`;
 
   try {
     // 檢查優惠券是否存在
-    const [couponExists] = await db.query(
-      'SELECT id FROM coupons WHERE id = ?',
-      [couponId]
+    const [couponExists] = await db.query('SELECT id FROM coupons WHERE id = ?', [couponId]);
+    if (!couponExists) throw new Error('優惠券不存在');
+
+    // 檢查用戶是否已經領取過該優惠券
+    const [existingClaim] = await db.query(
+      'SELECT id FROM user_coupons WHERE user_id = ? AND coupon_id = ?',
+      [userId, couponId]
     );
-    if (!couponExists) {
-      throw new Error('優惠券不存在');
+    if (existingClaim.length > 0) {
+      throw new Error('您已經領取過此優惠券');
     }
 
     // 嘗試獲取 Redis 鎖
-    const lockAcquired = await redis.set(lockKey, 'locked', 'NX', 'PX', lockTimeout);
-    if (!lockAcquired) {
-      throw new Error('無法獲取優惠券,請稍後再試');
-    }
+    const lockAcquired = await redis.set(lockKey, lockValue, 'NX', 'PX', lockTimeout);
+    if (!lockAcquired) throw new Error('無法獲取優惠券,請稍後再試');
 
-    // 減少數量
+    // 減少 Redis 中的優惠券數量
     const newQuantity = await redis.decr(quantityKey);
     if (newQuantity < 0) {
       // 如果數量小於 0，回滾操作
@@ -48,10 +51,11 @@ async function claimCoupon(userId, couponId) {
     throw error;
   } finally {
     // 確保釋放鎖
-    await redis.del(lockKey);
+    if (await redis.get(lockKey) === lockValue) {
+      await redis.del(lockKey);
+    }
   }
 }
-
 
 
 // 驗證優惠券的可用性
