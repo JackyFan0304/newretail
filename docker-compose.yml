@@ -1,0 +1,51 @@
+version: '3.9'
+
+services:
+  app:
+    image: node:18
+    container_name: newretail_app
+    working_dir: /usr/src/app
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: P@ssw0rd
+      DB_NAME: newretail_crm_system
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - db
+      - redis
+    command: >
+      sh -c "npm install && npm run start"
+
+  db:
+    image: mysql:8.0
+    container_name: newretail_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: P@ssw0rd
+      MYSQL_DATABASE: newretail_crm_system
+      MYSQL_USER: root
+      MYSQL_PASSWORD: P@ssw0rd
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  redis:
+    image: redis:7.0
+    container_name: newretail_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  db_data:
+  redis_data:
