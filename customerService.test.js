@@ -12,7 +12,7 @@ async function testCustomerFunctions() {
     // 測試行銷簡訊功能
     if (targetCustomers.length > 0) {
       console.log('\n測試行銷簡訊功能:');
-      const smsTemplate = '親愛的{name}您好,這絕對不是可疑的詐騙廣告,感謝您近期在創新新消費{amount}元,我們有新的優惠活動想邀請您參加...';
+      const smsTemplate = '親愛的{name}您好,這絕對不是可疑的詐騙廣告,感謝您近期在創新新消費{total_amount}元,我們有新的優惠活動想邀請您參加...';
       await sendMarketingSMS([targetCustomers[0]], smsTemplate);
       console.log('簡訊發送測試完成');
     }
