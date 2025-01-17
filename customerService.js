@@ -12,25 +12,35 @@ async function getTargetCustomers(days, minAmount) {
   
   try {
     const [results] = await db.query(query, [days, minAmount]);
-    return results;
+    return results || []; // 確保返回空陣列而不是 null
   } catch (error) {
-    console.error('查詢出錯:', error);
-    throw error;
+    console.error('查詢出錯:', error.message);
+    throw new Error(`無法獲取目標客戶: ${error.message}`);
   }
 }
 
 function generateSMSContent(template, customer) {
-    return template.replace('{name}', customer.name)
-                   .replace('{amount}', customer.total_amount);
+  if (!template.includes('{name}') || !template.includes('{total_amount}')) {
+    throw new Error('模板格式錯誤，必須包含 {name} 和 {total_amount}');
   }
   
-  async function sendMarketingSMS(customers, template) {
-    for (const customer of customers) {
-      const message = generateSMSContent(template, customer);
-      // 這裡模擬發送簡訊的過程
-      console.log(`發送簡訊給 ${customer.name}: ${message}`);
-      // 實際應用中,這裡應該調用簡訊服務的API
-    }
+  return template.replace('{name}', customer.name)
+                 .replace('{total_amount}', customer.total_amount.toLocaleString('en-US', { style: 'currency', currency: 'USD' }));
+}
+
+async function sendMarketingSMS(customers, template) {
+  const sendPromises = customers.map(async (customer) => {
+    const message = generateSMSContent(template, customer);
+    console.log(`發送簡訊給 ${customer.name}: ${message}`);
+    // 在此調用實際簡訊 API 發送
+  });
+
+  try {
+    await Promise.all(sendPromises); // 並行發送簡訊
+    console.log('所有簡訊已成功發送');
+  } catch (error) {
+    console.error('發送簡訊過程中出現錯誤:', error.message);
   }
+}
 
 module.exports = { getTargetCustomers, sendMarketingSMS };
